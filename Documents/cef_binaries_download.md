@@ -2,11 +2,20 @@
 
 Note: This description is for 64-bit. The guide will also work for 32-bit - the right binaries need to be downloaded.
 
-CEF binaries are automatically downloaded for Windows builds for Nuget packages. For all platforms (Windows, Linux, MacOS, binaries are downloaded at runtime if configured to do so by the developer. Auto download at runtime is the default.
+CEF binaries are automatically downloaded for Windows builds for Nuget packages. For all platforms (Windows, Linux, MacOS, binaries are downloaded at runtime if configured to do so by the developer. 
+
+Auto download at runtime is the default.
+To disable auto download and do it manually:
+
+````C#
+   var config = DefaultConfiguration.CreateForRuntimePlatform();
+   config.CefDownloadOptions.AutoDownloadWhenMissing = false;
+````
+
 
 For manual download please these follow steps:
 
-1.  Get CEF binaries from [Spotify CEF binaries download page](http://opensource.spotify.com/cefbuilds/index.html). 
+1.  Get CEF binaries from [Spotify CEF binaries download page](https://cef-builds.spotifycdn.com/index.html). 
 
      #### Versions Map 
     | Chromely.CefGlue| Chromely.Unofficial.CefGlue.NetStd | Required CEF Binary |

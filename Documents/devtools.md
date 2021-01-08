@@ -29,17 +29,17 @@ Debug mode in config code:
     config.DebuggingMode = true;
 ````
 
-The context menu is provided via CEF/CefGlue's [ContextMenuHandler](https://github.com/chromelyapps/Chromely/blob/master/src/Chromely.CefGlue/CefGlue/Classes.Handlers/CefContextMenuHandler.cs). Chromely provides a [default implementation of ContextMenuHandler](https://github.com/chromelyapps/Chromely/blob/master/src/Chromely.CefGlue/Browser/Handlers/CefGlueContextMenuHandler.cs) but it is configurable.
+The context menu is provided via CEF/CefGlue's [ContextMenuHandler](https://github.com/chromelyapps/Chromely/blob/master/src/Chromely/CefGlue/Classes.Handlers/CefContextMenuHandler.cs). Chromely provides a [default implementation of ContextMenuHandler](https://github.com/chromelyapps/Chromely/blob/master/src/Chromely/Browser/Handlers/DefaultContextMenuHandler.cs) but it is configurable.
 
 To conigure the DevTools menu, register a new custom ContextMenuHandler:
 
 ````csharp
     public class CusomChromelyApp : ChromelyBasicApp
     {
-        public override void Configure(IChromelyContainer container)
+          public override void ConfigureServices(ServiceCollection services)
         {
-            base.Configure(container);
-            container.RegisterSingleton(typeof(IChromelyCustomHandler), Guid.NewGuid().ToString(), typeof(CustomContextMenuHandler));
+            base.ConfigureServices(services);
+            services.AddSingleton<CefContextMenuHandler, CustomCustomContextMenuHandlerDragHandler>();
         }
     }
 

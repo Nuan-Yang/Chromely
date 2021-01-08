@@ -1,5 +1,0 @@
-Note:
-
-Do not remove/overrwrite:
-File: CefRuntime.cs
-Folder: Wrapper

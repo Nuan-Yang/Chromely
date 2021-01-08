@@ -24,46 +24,6 @@ There are [4 types](https://github.com/chromelyapps/Chromely/blob/master/src/Chr
 
 You can register a url scheme either in config file or via C# code.
 
-- Using config file
-
-````javascript
- "urlSchemes": [
-        {
-        "name": "default-resource",
-        "baseUrl": "",
-        "scheme": "local",
-        "host": "",
-        "urlSchemeType": "resource",
-        "baseUrlStrict": false
-        },
-        {
-        "name": "default-custom-http",
-        "baseUrl": "",
-        "scheme": "http",
-        "host": "chromely.com",
-        "urlSchemeType": "custom",
-        "baseUrlStrict": false
-        },
-        {
-        "name": "default-command-http",
-        "baseUrl": "",
-        "scheme": "http",
-        "host": "command.com",
-        "urlSchemeType": "command",
-        "baseUrlStrict": false
-        },
-        {
-        "name": "chromely-site",
-        "baseUrl": "https://github.com/chromelyapps/Chromely",
-        "scheme": "",
-        "host": "",
-        "urlSchemeType": "external",
-        "baseUrlStrict": true
-        }
-  ]
-````
-- Using C# code
-
 ````csharp
     public class DefaultConfiguration : IChromelyConfiguration
     {

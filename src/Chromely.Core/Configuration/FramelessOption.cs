@@ -1,15 +1,22 @@
-﻿using System;
+﻿// Copyright © 2017-2020 Chromely Projects. All rights reserved.
+// Use of this source code is governed by MIT license that can be found in the LICENSE file.
+
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using Chromely.Core.Host;
 
-namespace Chromely.Core.Configuration 
+namespace Chromely.Core.Configuration
 {
 
     /// <summary> Options associated with the Frameless mode. </summary>
-    public class FramelessOption 
+    public class FramelessOption
     {
-        public bool UseDefaultFramelessController { get; set; }
+        private static int DRAGZONE_HEIGHT = 32;
+        private static int DRAGZONE_TOP_OFFSET = 0;
+        private static int DRAGZONE_LEFT_OFFSET = 0;
+        private static int DRAGZONE_RIGHT_OFFSET = 140;
+
         public bool UseWebkitAppRegions { get; set; }
 
         /// <summary> Callback function to determine if the point is within the draggable area. </summary>
@@ -25,12 +32,11 @@ namespace Chromely.Core.Configuration
         public List<DragZoneConfiguration> DragZones { get; set; }
 
         /// <summary> Default constructor. </summary>
-        public FramelessOption() 
+        public FramelessOption()
         {
-            UseDefaultFramelessController = true;
             UseWebkitAppRegions = false;
             DragZones = new List<DragZoneConfiguration>();
-            DragZones.Add(new DragZoneConfiguration(32,0,0,140));
+            DragZones.Add(new DragZoneConfiguration(DRAGZONE_HEIGHT, DRAGZONE_TOP_OFFSET, DRAGZONE_LEFT_OFFSET, DRAGZONE_RIGHT_OFFSET));
             IsDraggable = IsDraggableCallbackFunc;
             DblClick = DblClickCallbackFunc;
         }
@@ -41,13 +47,14 @@ namespace Chromely.Core.Configuration
         /// <param name="nativeHost"> The Chromely native host interface. </param>
         /// <param name="point">      The click point. </param>
         /// <returns> True if in the drag region, false if not. </returns>
-        public bool IsDraggableCallbackFunc(IChromelyNativeHost nativeHost, Point point) 
+        public bool IsDraggableCallbackFunc(IChromelyNativeHost nativeHost, Point point)
         {
             var size = nativeHost.GetWindowClientSize();
             var scale = nativeHost.GetWindowDpiScale();
 
             var in_zone = false;
-            foreach (var zone in DragZones) {
+            foreach (var zone in DragZones)
+            {
                 if (zone.InZone(size, point, scale))
                     in_zone = true;
             }
@@ -56,13 +63,16 @@ namespace Chromely.Core.Configuration
 
         /// <summary> Doubleclick callback function. </summary>
         /// <param name="nativeHost"> The Chromely native host interface. </param>
-        public void DblClickCallbackFunc(IChromelyNativeHost nativeHost) {
+        public void DblClickCallbackFunc(IChromelyNativeHost nativeHost)
+        {
             // Toggle between normal (restore) and maximized
             var state = nativeHost.GetWindowState();
-            if (state == WindowState.Maximize) {
+            if (state == WindowState.Maximize)
+            {
                 nativeHost.SetWindowState(WindowState.Normal);
             }
-            else {
+            else
+            {
                 nativeHost.SetWindowState(WindowState.Maximize);
             }
         }

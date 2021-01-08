@@ -9,7 +9,7 @@ Chromely via CefGlue provides 2 different ways of Interprocess Communication (IP
 
 These allow Chromely to receieve JavaScript requests initated by the Renderer, processed by the Browser (C#) and returned Json data response to the Renderer. 
 
-Additionally via [Commands](https://github.com/chromelyapps/Chromely/tree/master/src/Chromely.Core/Network/CommandRoute.cs), Chromely provides a **fire-and-forget** scenarias - JavaScript requests are sent from the Renderer and processed by the Browser but no response returned to the Renderer.
+Additionally via [Commands](https://github.com/chromelyapps/Chromely/blob/master/src/Chromely.Core/Network/CommandActionRoute.cs), Chromely provides a **fire-and-forget** scenarias - JavaScript requests are sent from the Renderer and processed by the Browser but no response returned to the Renderer.
 
 ## Configuring Network Scheme/Request Endpoint
 
@@ -40,21 +40,19 @@ An action method can be registered in the custom controller constructor or as an
 ````csharp
 public DemoController()
 {
-	RegisterGetRequest("/democontroller/movies", GetMovies);
-	RegisterPostRequest("/democontroller/movies", SaveMovies);
+	RegisterRequest("/democontroller/movies", GetMovies);
+	RegisterRequest("/democontroller/movies", SaveMovies);
 	RegisterCommand("/democontroller/showdevtools", ShowDevTools);
 }
 
-private ChromelyResponse GetMovies(ChromelyRequest request)
+private IChromelyResponse GetMovies(IChromelyRequest request)
 {
 }
 
 
-private ChromelyResponse SaveMovies(ChromelyRequest request)
+private IChromelyResponse SaveMovies(IChromelyRequest request)
 {
 }
-
-
 
 public void ShowDevTools(IDictionary<string, string> queryParameters)
 {
@@ -64,18 +62,18 @@ public void ShowDevTools(IDictionary<string, string> queryParameters)
 
 - Attribute decorated type
 ````csharp
-[HttpGet(Route = "/democontroller/movies")]
-public ChromelyResponse GetMovies(ChromelyRequest request)
+[RequestAction(RouteKey = "/democontroller/movies")]
+public IChromelyResponse GetMovies(IChromelyRequest request)
 {
 }
 
-[HttpPost(Route = "/democontroller/movies")]
-public ChromelyResponse SaveMovies(ChromelyRequest request)
+[RequestAction(RouteKey = "/democontroller/movies")]
+public IChromelyResponse SaveMovies(IChromelyRequest request)
 {
 }
 
 	  
-[Command(Route = "/democontroller/showdevtools")]
+[CommandAction(RouteKey = "/democontroller/showdevtools")]
 public void ShowDevTools(IDictionary<string, string> queryParameters)
 {
 }
@@ -87,23 +85,19 @@ public void ShowDevTools(IDictionary<string, string> queryParameters)
 
 The class CustomController must be registered. Registration can be done either by registering the Assembly where the class is created or registering via the Container
 
-- Registering the assembly class can be done in 2 ways:
-
-1.  Adding the fullpath of the assembly in the configuration config file 
-
-````javascript
-  "controllerAssemblies": [
-    "Chromely.External.Controllers.dll"
-  ],
-````
-
-2. Adding it in the configuration object.
+- Adding as assembly or assembly file
 
 ````csharp
 
-    var config = new DefaultConfiguration();
-    config.ControllerAssemblies = new List<ControllerAssemblyInfo>();
-    config.ControllerAssemblies.RegisterServiceAssembly("Chromely.External.Controllers.dll");
+    public class CusomChromelyApp : ChromelyBasicApp
+    {
+          public override void ConfigureServices(ServiceCollection services)
+        {
+            base.ConfigureServices(services);
+            RegisterControllerAssembly(services, typeof(DemoApp).Assembly);
+            RegisterControllerAssembly(services, fullpath);
+        }
+    }
 
 ````
 
@@ -111,13 +105,12 @@ The class CustomController must be registered. Registration can be done either b
 
 ````csharp
 
-public class DemoChromelyApp : ChromelyBasicApp
+    public class CusomChromelyApp : ChromelyBasicApp
     {
-        public override void Configure(IChromelyContainer container)
+          public override void ConfigureServices(ServiceCollection services)
         {
-            base.Configure(container);
-            container.RegisterSingleton(typeof(ChromelyController), Guid.NewGuid().ToString(), typeof(CustomController));
-
+            base.ConfigureServices(services);
+            services.AddSingleton<ChromelyController, CustomController>();
         }
     }
 

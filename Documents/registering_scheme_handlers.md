@@ -23,24 +23,6 @@ Registration of a custom scheme handler requires 2 steps:
 
 ### 1. Registration of a url scheme
 
-You can register a url scheme either in config file or via C# code.
-
-- Using config file
-
-````javascript
-  "urlSchemes": [
-    {
-      "name": "custom-01",
-      "baseUrl": "",
-      "scheme": "http",
-      "host": "chromely.com",
-      "urlSchemeType": "custom",
-      "baseUrlStrict": false
-    },
-  ]
-````
-- Using C# code
-
 ````csharp
     public class DefaultConfiguration : IChromelyConfiguration
     {
@@ -57,44 +39,65 @@ You can register a url scheme either in config file or via C# code.
 
 ### 2. Registration of a custom scheme handler factory
 
-A registered url scheme must be matched to custom scheme handler. If no custom handler is provided, Chromely uses the provided [default handler](https://github.com/chromelyapps/Chromely/blob/master/src/Chromely.CefGlue/Browser/Handlers/CefGlueHttpSchemeHandler.cs).
+A registered url scheme must be matched to custom scheme handler. If no custom handler is provided, Chromely uses the provided [default handler](https://github.com/chromelyapps/Chromely/blob/master/src/Chromely/Browser/Handlers/DefaultRequestSchemeHandler.cs).
 
-Registering a custom scheme requires creating both a custom scheme handler and custom scheme handler factory. The factory is then registered with the IOC container.
-
-Custom scheme handler:
-
-````csharp
-    public class CustomHttpSchemeHandler : CefResourceHandler
-    {
-    }
-````
+Registering a custom scheme requires creating both a custom scheme handler and custom scheme handler factory. The factory and custom scheme handler are then registered with the IOC container.
 
 Custom scheme handler factory:
 
 ````csharp
-    public class CustomHttpSchemeHandlerFactory : CefSchemeHandlerFactory
+    class Program
     {
-        protected override CefResourceHandler Create(CefBrowser browser, CefFrame frame, string schemeName, CefRequest request)
+        [STAThread]
+        static void Main(string[] args)
         {
-            return new CustomHttpSchemeHandler();
+            AppBuilder
+            .Create()
+            .UseApp<DemoApp>()
+            .Build()
+            .Run(args);
         }
+    }
+
+    public class DemoApp : ChromelyBasicApp
+    {
+        public override void ConfigureServices(ServiceCollection services)
+        {
+            base.ConfigureServices(services);
+            services.AddSingleton(typeof(CustomRequestSchemeHandlerFactory), typeof(CustomRequestSchemeHandlerFactory));
+            services.AddSingleton(typeof(IChromelySchemeHandler), typeof(CustomSchemeHandler));
+
+            RegisterControllerAssembly(services, typeof(DemoApp).Assembly);
+        }
+    }
+
+    public class CustomSchemeHandler : IChromelySchemeHandler
+    {
+        public CustomSchemeHandler(CustomRequestSchemeHandlerFactory schemeHandlerFactory)
+        {
+            Name = "MyCustomRequestSchemeHamdler";
+            // Scheme: myscheme
+            // Host: custom - mapped to folder name containing resource files
+            //http://custom.com/customcontroller/hello";
+            Scheme = new UrlScheme("mycustomrequestcheme", "http", "custom.com", string.Empty, UrlSchemeType.LocalRquest);
+            HandlerFactory = schemeHandlerFactory;
+            IsCorsEnabled = true;
+            IsSecure = false;
+        }
+
+        public string Name { get; set; }
+        public UrlScheme Scheme { get; set; }
+
+        // Needed for CefSharp
+        public object Handler { get; set; }
+        public object HandlerFactory { get; set; }
+        public bool IsCorsEnabled { get; set; }
+        public bool IsSecure { get; set; }
+    }
+
+    public class CustomRequestSchemeHandlerFactory : DefaultResourceSchemeHandlerFactory
+    {
     }
 ````
 
-Handler factory registration:
-
-````csharp
-    public class DemoChromelyApp : ChromelyBasicApp
-    {
-        public override void Configure(IChromelyContainer container)
-        {
-            base.Configure(container);
-            container.RegisterSingleton(typeof(IChromelySchemeHandlerFactory), "custom-01", typeof(CustomHttpSchemeHandlerFactory));
-        }
-    }
-````
-
-Notes:
-- Interface [IChromelySchemeHandlerFactory](https://github.com/chromelyapps/Chromely/blob/master/src/Chromely.Core/IChromelySchemeHandlerFactory.cs) is just a placeholder and should not be implemented.
-- The name "custom-01" used in url scheme must match the key used in factory registration.
-- Sample [CustomHttpSchemeHandler](https://github.com/chromelyapps/Chromely/blob/master/src/Chromely.CefGlue/Browser/Handlers/CefGlueHttpSchemeHandler.cs) and [CustomHttpSchemeHandlerFactory](https://github.com/chromelyapps/Chromely/blob/master/src/Chromely.CefGlue/Browser/Handlers/CefGlueHttpSchemeHandlerFactory.cs).
+Please see [Howto: Custom Request Scheme Handler](https://github.com/chromelyapps/Chromely/issues/247) for more.

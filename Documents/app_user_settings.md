@@ -44,8 +44,7 @@ class Program
    {
       AppBuilder
       .Create()
-      .UseAppSettings<CustomAppSetting>()
-      .UseApp<CustomChromelyApp>(new CustomChromelyApp())
+      .UseApp<CustomChromelyApp>()
       .Build()
       .Run(args);
    }
@@ -54,26 +53,13 @@ class Program
 public class CustomAppSettings : IChromelyAppSettings
 {
 }
-````
 
-Or:
-
-````csharp
-class Program
+public class CustomChromelyApp : ChromelyBasicApp
 {
-   [STAThread]
-   static void Main(string[] args)
+   public override void ConfigureServices(ServiceCollection services)
    {
-      AppBuilder
-      .Create()
-      .UseAppSettings<CustomAppSetting>(new CustomAppSetting())
-      .UseApp<CustomChromelyApp>(new CustomChromelyApp())
-      .Build()
-      .Run(args);
+      base.ConfigureServices(services);
+      services.AddSingleton<IChromelyAppSettings, CustomAppSettings>();
    }
-}
-
-public class CustomAppSettings : IChromelyAppSettings
-{
 }
 ````

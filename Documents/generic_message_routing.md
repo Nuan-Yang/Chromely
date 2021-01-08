@@ -25,21 +25,21 @@ For Chromely CefGlue message routing, the following must be done:
 - Add C# Controller/Action functionality to handle requests.
 
 #### Register Message Router Handler
-To use the [default handler](https://github.com/mattkol/Chromely/blob/master/src/Chromely.CefGlue/Browser/Handlers/CefGlueMessageRouterHandler.cs) nothing needs to be done. 
+To use the [default handler](https://github.com/chromelyapps/Chromely/blob/master/src/Chromely/Browser/Handlers/DefaultMessageRouterHandler.cs) nothing needs to be done. 
 
 For custom handlers, developers need to register one:
 
 ````csharp
     public class CusomChromelyApp : ChromelyBasicApp
     {
-        public override void Configure(IChromelyContainer container)
+          public override void ConfigureServices(ServiceCollection services)
         {
-            base.Configure(container);
-            container.RegisterSingleton(typeof(IChromelyMessageRouter), Guid.NewGuid().ToString(), typeof(CustomMessageRouter));
+            base.ConfigureServices(services);
+            services.AddSingleton<IChromelyMessageRouter, CustomMessageRouter>();
         }
     }
 
-    public class CustomMessageRouter : CefMessageRouterBrowserSide.Handler
+    public class CustomMessageRouter : IChromelyMessageRouter
     {
     }
 ````
@@ -97,15 +97,14 @@ Where:
 #### C# Controller/Action
 A sample Controller
 ````charp
-    [ControllerProperty(Name = "DemoController", Route = "democontroller")]
     public class DemoController : ChromelyController
     {
         public DemoController()
         {
-            RegisterGetRequest("/democontroller/movies", GetMovies);
+            RegisterRequest("/democontroller/movies", GetMovies);
         }
 		
-        private ChromelyResponse GetMovies(ChromelyRequest request)
+        private IChromelyResponse GetMovies(IChromelyRequest request)
         {
 		    return new ChromelyResponse();
         }
